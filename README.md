@@ -30,3 +30,12 @@ v1.0 made in a day.
 * Home      - Go to First Image
 * End       - Go to Last Image
 
+## How To Install
+For windows users download a copy from the project's release page.  
+For a custom install or for Linux / Mac users:  
+1. Download an appropriate version of NW.js from nwjs.io/downloads/.  
+2. Download the repository into a folder called 'package.nw'.
+3. Move the 'package.nw' folder in to the root NW.js folder.
+4. (Optional) Rename nw(.exe) to jDisplay(.exe).
+5. Run nw(.exe).
+6. Profit!
