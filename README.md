@@ -10,6 +10,7 @@ v1.0 made in a day.
 * Can randomize images to display.
 * Remembers history of randomly drawn images.
 * Works with jpeg, png, bmp, and gifs.
+* Probably broken because I made it in a day with very little testing.
 
 ## Constrols:
 * F11       - Enter/Exit Fullscreen
