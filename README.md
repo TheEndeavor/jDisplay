@@ -4,7 +4,7 @@ Simple image viewer
 jDisplay is a simple image viewer.
 v1.0 made in a day.
 
-## Features:
+## Features
 * Drag and Drop files or directories to load them.
 * Can recursively search for images in directories to display.
 * Can randomize images to display.
@@ -12,7 +12,13 @@ v1.0 made in a day.
 * Works with jpeg, png, bmp, and gifs.
 * Probably buggy because I made it in a day with very little testing.
 
-## Constrols:
+## Missing Features:
+* Zooming and Dragging the image.
+* Loading images from Zip Files.
+* Resuming where you left off.
+* Support for more formats, including possibly video.
+
+## Constrols
 * F11       - Enter/Exit Fullscreen
 * Exc       - Exit Fullscreen / Halt Parsing
 * Left      - Previous Image
