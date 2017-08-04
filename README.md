@@ -31,7 +31,7 @@ v1.0 made in a day.
 * End       - Go to Last Image
 
 ## How To Install
-For windows users download a copy from the project's release page.  
+For windows users download the latest release from the project's releases page. Extract the zip and run nw.exe.  
 For a custom install or for Linux / Mac users:  
 1. Download an appropriate version of NW.js from nwjs.io/downloads/.  
 2. Download the repository into a folder called 'package.nw'.
