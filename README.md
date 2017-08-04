@@ -12,7 +12,7 @@ v1.0 made in a day.
 * Works with jpeg, png, bmp, and gifs.
 * Probably buggy because I made it in a day with very little testing.
 
-## Missing Features:
+## Missing Features
 * Zooming and Dragging the image.
 * Loading images from Zip Files.
 * Resuming where you left off.
