@@ -18,7 +18,7 @@ v1.0 made in a day.
 * Resuming where you left off.
 * Support for more formats, including possibly video.
 
-## Constrols
+## Controls
 * F11       - Enter/Exit Fullscreen
 * Exc       - Exit Fullscreen / Halt Parsing
 * Left      - Previous Image
