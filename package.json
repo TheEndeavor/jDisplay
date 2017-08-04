@@ -1,0 +1,24 @@
+{
+	"name": "jDisplay",
+	"version": "1.0",
+	"description": "",
+	"main": "index.html",
+	"scripts":
+	{
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "",
+	"window":
+	{
+		"title": "jDisplay",
+		"id": "Main Window",
+		"frame": true,
+		"width": 1280,
+		"height": 720,
+		"min_width": 800,
+		"min_height": 600,
+		"show_in_taskbar": true,
+		"show": true
+	}
+	
+}
