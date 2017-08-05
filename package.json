@@ -19,6 +19,7 @@
 		"min_height": 600,
 		"show_in_taskbar": true,
 		"show": true
-	}
+	},
+	"dom_storage_quota": 50,
 	
 }

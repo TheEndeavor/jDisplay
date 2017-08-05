@@ -48,6 +48,8 @@ body
 	
 	padding: 8px;
 	
+	overflow: hidden;
+	
 	font-size: 16px;
 	
 	color: white;
@@ -69,6 +71,18 @@ body
 	transition: opacity 0.6s;
 	
 	background-color: rgba(0, 0, 0, 0.9);
+}
+
+#bar
+{
+	position: absolute;
+	
+	height: 2px;
+	
+	left: 0px;
+	top: -2px;
+	
+	background-color: gray;
 }
 
 .button-group

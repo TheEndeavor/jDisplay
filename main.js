@@ -1,8 +1,34 @@
+if (!window.$)
+	location.reload();
+
 $(document).ready(function()
 {
 	"use strict";
 	
 	var filesystem = require("fs");
+	
+	
+	nw.App.on("open", function(args)
+	{
+		nw.Window.open("index.html", {
+			"focus": true,
+			
+			"new_instance": true,
+			
+			"frame": true,
+			"width": 1280,
+			"height": 720,
+			"min_width": 800,
+			"min_height": 600,
+			"show_in_taskbar": true,
+			"show": true
+			
+		}, function(otherWindow)
+		{
+			console.log(otherWindow);
+		});
+	});
+	
 	
 	$.extend(
 	{
@@ -35,23 +61,97 @@ $(document).ready(function()
 	});
 	
 	
-	/**
-		Proper modulus, since js '%' doesn't handle negative numbers correctly.
-	**/
-	function modulus(number, mod)
-	{
-		return ((number % mod) + mod)% mod;
+	var Util = {
+		///	Proper modulus, since js '%' doesn't handle negative numbers correctly.
+		"modulus": function(number, mod)
+		{
+			return ((number % mod) + mod)% mod;
+		},
+		
+		"commaSeperate": function(value)
+		{
+			while (/(\d+)(\d{3})/.test(value.toString()))
+			{
+				value = value.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
+			}
+			
+			return value;
+		},
 	};
 	
-	function commaSeperate(value)
+	function clearOldSources()
 	{
-		while (/(\d+)(\d{3})/.test(value.toString()))
+		var keys = Object.keys(localStorage);
+		keys = keys.filter((key) => {
+			return key.startsWith("savetime/");
+		}).map((key) => {
+			return key.substring(9);
+		});
+
+		$.each(keys, (index, key) =>
 		{
-			value = value.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
+			var saveTime = localStorage.getItem(`savetime/${key}`);
+			if ((saveTime + (365 * 24 * 60 * 60)) < (new Date()).getTime())
+			{
+				localStorage.removeItem(`position/${key}`);
+				localStorage.removeItem(`savetime/${key}`);
+			}
+		});
+	}
+	clearOldSources();
+	
+	
+	
+	class Loader
+	{
+		constructor(name, loader = null)
+		{
+			this._name = name;
+			this._loader = loader;
 		}
 		
-		return value;
-	};
+		getName()
+		{
+			return this._name;
+		}
+		
+		hasLoader()
+		{
+			return this._loader !== null;
+		}
+		
+		load()
+		{
+			this._loader();
+		}
+		
+	}
+	
+	class Image
+	{
+		constructor(name, source)
+		{
+			this._name = name;
+			this._source = source;
+			
+			this._encoded = source.startsWith("data:image;base64,");
+		}
+		
+		getName()
+		{
+			return this._name;
+		}
+		
+		getSource()
+		{
+			return this._source;
+		}
+		
+		isEncoded()
+		{
+			return this._encoded;
+		}
+	}
 	
 	
 	var viewer = new class
@@ -60,13 +160,13 @@ $(document).ready(function()
 		{
 			this._imageNode = $("#image");
 			
-			this._directory = null;
+			this._source = [];
+			
 			this._loading = [];
-			this._firstSet = 0;
 			this._loadingIndex = 0;
 			
 			this._images = [];
-			this._drawIndex = -1;
+			this._imageIndex = -1;
 			
 			this._history = [];
 			this._historyIndex = -1;
@@ -75,6 +175,17 @@ $(document).ready(function()
 			this._loadingImage = null;
 			
 			
+			this.updateSettings();
+			
+			$(window).on("storage", (event) =>
+			{
+				this.updateSettings();
+			});
+			
+		}
+		
+		updateSettings()
+		{
 			this._randomize = localStorage.getItem("setting/randomize");
 			if (this._randomize === null)
 				this._randomize = false;
@@ -97,7 +208,6 @@ $(document).ready(function()
 				$("#recursive").css("background-image", "url(/icon/tree-deep.png)");
 			else
 				$("#recursive").css("background-image", "url(/icon/tree-shallow.png)");
-			
 		}
 		
 		isLoaded()
@@ -119,45 +229,68 @@ $(document).ready(function()
 		{
 			this.clearHistory();
 			
-			this._randomize = !this._randomize;
-			localStorage.setItem("setting/randomize", this._randomize ? "true" : "false");
-			
-			if (this._randomize)
-				$("#randomize").css("background-image", "url(/icon/draw-random.png)");
-			else
-				$("#randomize").css("background-image", "url(/icon/draw-ordered.png)");
+			localStorage.setItem("setting/randomize", this._randomize ? "false" : "true");
+			viewer.updateSettings();
 		}
 		
 		toggleRecursive()
 		{
-			this._recursive = !this._recursive;
-			localStorage.setItem("setting/recursive", this._recursive ? "true" : "false");
-			
-			if (this._recursive)
-				$("#recursive").css("background-image", "url(/icon/tree-deep.png)");
-			else
-				$("#recursive").css("background-image", "url(/icon/tree-shallow.png)");
+			localStorage.setItem("setting/recursive", this._recursive ? "false" : "true");
+			viewer.updateSettings();
 		}
 		
-		init(files)
+		init(source)
 		{
-			if (typeof(files) === "string")
-				files = [files];
+			if ((typeof source) === "string")
+				source = [source];
 			
-			files = files.filter((file) => {return file !== "";});
-			if (files.length <= 0)
+			source = source.filter((file) => {return file !== "";});
+			if (source.length <= 0)
 				return;
+			
+			this.terminate();
+			
+			this._source = source;
 			
 			this._imageNode.css("background-image", "");
 			
-			this._loading = files;
-			this._firstSet = this._loading.length;
+			this._loading = [].concat(this._source);
 			this._images = [];
 			
-			this._drawIndex = -1;
+			this._imageIndex = -1;
 			this._historyIndex = -1;
 			this._currentImage = null;
+			
 			this.load();
+		}
+		
+		terminate()
+		{
+			if (!this.isLoaded())
+				this.cancelLoading();
+			
+			if (this._source.length === 1 && this._images.length > 1)
+			{
+				//	Save current position
+				localStorage.setItem(`position/${this._source[0]}`, this._imageIndex);
+				localStorage.setItem(`savetime/${this._source[0]}`, (new Date()).getTime());
+			}
+			
+			this._source = [];
+			
+			this._loading = [];
+			this._loadingIndex = 0;
+			
+			this._images = [];
+			this._imageIndex = -1;
+			
+			this._history = [];
+			this._historyIndex = -1;
+			
+			this.clearLoadingImage();
+			
+			this._currentImage = null;
+			this._loadingImage = null;
 		}
 		
 		load()
@@ -166,32 +299,56 @@ $(document).ready(function()
 			{
 				var start = performance.now();
 				var now = start;
+				
+				var name = this._loading[this._loadingIndex];
+				name = (name instanceof Loader) ? name.getName() : name;
+				$("#error").text(`Parsing ${name}\n\n${Util.commaSeperate(this._loadingIndex)} of ${Util.commaSeperate(this._loading.length)} (${(this._loadingIndex / this._loading.length * 100).toFixed(2)}%)`);
+				$("#bar").css("width", `${(this._loadingIndex / this._loading.length * 100)}%`);
+				
+				var async = false;
 				while ((this._loadingIndex <= (this._loading.length - 1)) && ((now - start < 50)))
 				{
-					this.parse(this._loading[this._loadingIndex], this._loadingIndex <= this._firstSet);
+					async = this.parse(this._loading[this._loadingIndex]);
 					this._loadingIndex++;
+					
+					if (async)
+						break;
 					
 					now = performance.now();
 				}
 				
-				$("#error").text(`Parsing ${this._loading[this._loadingIndex]}\n\n${commaSeperate(this._loadingIndex)} of ${commaSeperate(this._loading.length)} (${(this._loadingIndex / this._loading.length * 100).toFixed(2)}%)`);
-				$("#error").css("display", "block");
-				
-				$.later(0, () =>
+				if (!async)
 				{
-					this.load();
-				});
+					$.later(0, () =>
+					{
+						this.load();
+					});
+				}
 				
 				return;
 			}
 			
 			this._loading = [];
 			this._loadingIndex = 0;
-			this.next();
+			
+			var startPosition = 0;
+			if (this._source.length === 1)
+			{
+				var startPosition = parseInt(localStorage.getItem(`position/${this._source[0]}`));
+				if (isNaN(startPosition))
+					startPosition = 0;
+			}
+			this.next(startPosition + 1);
 		}
 		
-		parse(fileOrDirectory, firstSet)
+		parse(fileOrDirectory)
 		{
+			if (fileOrDirectory instanceof Loader)
+			{
+				fileOrDirectory.load();
+				return true;
+			}
+			
 			fileOrDirectory = fileOrDirectory.split("\\").join("/");
 			
 			var stats;
@@ -201,7 +358,7 @@ $(document).ready(function()
 			}
 			catch (e)
 			{
-				return;
+				return false;
 			}
 			
 			if (stats.isFile())
@@ -212,10 +369,53 @@ $(document).ready(function()
 					lowerCase.endsWith(".gif") ||
 					lowerCase.endsWith(".bmp"))
 				{
-					this._images.push(fileOrDirectory);
+					this._images.push(new Image(fileOrDirectory, `file:////${fileOrDirectory}`));
 				}
+				else if (lowerCase.endsWith(".zip") ||
+					lowerCase.endsWith(".cbz"))
+				{
+					var content = filesystem.readFileSync(fileOrDirectory);
+					var async = JSZip.loadAsync(content);
+					async.then((data) =>
+					{
+						var files = [].concat(Object.values(data.files));
+						files.sort((a, b) => { return (a.name < b.name) ? -1 : ((a.name > b.name) ? 1 : 0); });
+						$.each(files, (name, file) =>
+						{
+							if (file.dir)
+								return;
+							
+							this._loading.push(new Loader(file.name, () =>
+							{
+								file.async("base64").then((base64) => 
+								{
+									this._images.push(new Image(file.name, `data:image;base64,${base64}`));
+									
+									$.later(0, () =>
+									{
+										this.load();
+									});
+								});
+							}));
+							
+						});
+						
+						$.later(0, () =>
+						{
+							this.load();
+						});
+					});
+					
+					return true;
+				}
+				else if (lowerCase.endsWith(".rar") ||
+					lowerCase.endsWith("cbr"))
+				{
+					
+				}
+				
 			}
-			else if (stats.isDirectory() && (this._recursive || firstSet))
+			else if (stats.isDirectory() && (this._recursive || (this._loadingIndex <= this._source.length)))
 			{
 				try
 				{
@@ -231,76 +431,7 @@ $(document).ready(function()
 				}
 			}
 			
-			/*
-			
-			var files = [];
-			try
-			{
-				files = filesystem.readdirSync(directory);
-			}
-			catch (e)
-			{
-				
-			}
-			
-			var directories = [];
-			if (this._recursive)
-			{
-				var directories = files.filter((file) =>
-				{
-					file = `${directory}/${file}`;
-					file = file.split("\\").join("/");
-					
-					try
-					{
-						var stats = filesystem.lstatSync(file);
-						return stats.isDirectory();
-					}
-					catch (e)
-					{
-						return false;
-					}
-				}).map((folder) => {
-					var folder = `${directory}/${folder}`;
-					folder = folder.split("\\").join("/");
-
-					return folder;
-				});
-			}
-			
-			files = files.filter((file) =>
-			{
-				file = `${directory}/${file}`;
-				file = file.split("\\").join("/");
-				
-				try
-				{
-					var stats = filesystem.lstatSync(file);
-					if (!stats.isFile())
-						return false;
-				}
-				catch (e)
-				{
-					return false;
-				}
-				
-				var lowerCase = file.toLowerCase();
-				return lowerCase.endsWith(".jpg") ||
-					   lowerCase.endsWith(".png") ||
-					   lowerCase.endsWith(".gif") ||
-					   lowerCase.endsWith(".bmp");
-			}).map((file) => {
-				var image = `${directory}/${file}`;
-				image = image.split("\\").join("/");
-				
-				return image;
-			});
-			
-			this._loading = this._loading.concat(directories);
-			
-			return files;
-			
-			*/
+			return false;
 		}
 		
 		
@@ -311,7 +442,7 @@ $(document).ready(function()
 		};
 
 
-		previous(advance = 1)
+		previous(count = 1)
 		{
 			if (!this.isLoaded())
 				return;
@@ -321,15 +452,15 @@ $(document).ready(function()
 
 			if (this._randomize)
 			{
-				this._historyIndex = Math.max(this._historyIndex - advance, 0);
+				this._historyIndex = Math.max(this._historyIndex - count, 0);
 				index = this._history[this._historyIndex];
 				nextImage = this._images[index];
 			}
 			else
 			{
-				this._drawIndex = Math.max(this._drawIndex - advance, 0);
-				index = this._drawIndex;
-				nextImage = this._images[this._drawIndex];
+				this._imageIndex = Math.max(this._imageIndex - count, 0);
+				index = this._imageIndex;
+				nextImage = this._images[this._imageIndex];
 			}
 			
 			this.showImage(index);
@@ -340,7 +471,7 @@ $(document).ready(function()
 			this.previous(this._images.length);
 		}
 
-		next(advance = 1)
+		next(count = 1)
 		{
 			if (!this.isLoaded())
 				return;
@@ -350,17 +481,17 @@ $(document).ready(function()
 			
 			if (this._randomize)
 			{
-				this._historyIndex = Math.max(this._historyIndex + advance, this._history.length - 1);
+				this._historyIndex = Math.max(this._historyIndex + count, this._history.length - 1);
 				if (this._historyIndex >= this._history.length)
 				{
 					while (nextImage === this._currentImage)
 					{
-						this._drawIndex = Math.floor(Math.random() * this._images.length);
-						nextImage = this._images[this._drawIndex];
-						index = this._drawIndex;
+						this._imageIndex = Math.floor(Math.random() * this._images.length);
+						nextImage = this._images[this._imageIndex];
+						index = this._imageIndex;
 					}
 					
-					this._history.push(this._drawIndex);
+					this._history.push(this._imageIndex);
 				}
 				else
 				{
@@ -370,9 +501,9 @@ $(document).ready(function()
 			}
 			else
 			{
-				this._drawIndex = Math.min(this._drawIndex + advance, this._images.length - 1);
-				nextImage = this._images[this._drawIndex];
-				index = this._drawIndex;
+				this._imageIndex = Math.min(this._imageIndex + count, this._images.length - 1);
+				nextImage = this._images[this._imageIndex];
+				index = this._imageIndex;
 			}
 			
 			this.showImage(index);
@@ -390,38 +521,49 @@ $(document).ready(function()
 			}
 		}
 		
-		showImage(file)
+		
+		
+		
+		
+		showImage(index)
 		{
-			var index = -1;
-			if (typeof(file) === "number")
-			{
-				index = file;
-				file = this._images[file];
-			}
+			var image = this._images[index];
 			
 			$("#error").css("display", "none");
+			$("#bar").css("width", `${(index / (this._images.length - 1) * 100)}%`);
 			
-			if (this._loadingImage !== null)
+			this.clearLoadingImage();
+			
+			if (!image.isEncoded())
 			{
-				this._loadingImage.off("error");
+				this._loadingImage = $("<img />");
+				this._loadingImage.on("error", (event) =>
+				{
+					$("#error").css("display", "block");
+					$("#error").text(`${image.getName()}\n\nFailed to load image`);
+					this._imageNode.css("background-image", "");
+
+					this.clearLoadingImage();
+				});
+				this._loadingImage.on("load", (event) =>
+				{
+					this.clearLoadingImage();
+				});
+				this._loadingImage.attr("src", image.getSource());
 			}
 			
-			this._loadingImage = $("<img />");
-			this._loadingImage.on("error", (event) =>
-			{
-				$("#error").css("display", "block");
-				$("#error").text(`${file}\n\nFailed to load image`);
-				this._imageNode.css("background-image", "");
-			});
-			this._loadingImage.attr("src", file);
+//			this._currentImage = file;
+			this._imageNode.css("background-image", `url("${image.getSource()}")`);
 			
-			this._currentImage = file;
-			this._imageNode.css("background-image", `url("file:////${file}")`);
+			$("#title").text(`${image.getName()} [${index + 1} / ${this._images.length}]`);
+		}
+		
+		clearLoadingImage()
+		{
+			if (this._loadingImage !== null)
+				this._loadingImage.off();
 			
-			if (index >= 0)
-				$("#title").text(`${file} [${index + 1} / ${this._images.length}]`);
-			else
-				$("#title").text(file);
+			this._loadingImage = null;
 		}
 		
 	};
@@ -429,7 +571,7 @@ $(document).ready(function()
 	
 	$("#exit").on("click", (event) =>
 	{
-		nw.App.quit();
+		nw.Window.get().close();
 	});
 	
 	$("#folder").on("click", (event) =>
@@ -477,25 +619,25 @@ $(document).ready(function()
 	{
 		switch (event.which)
 		{
+		case 37:	//	Left Arrow
+			viewer.previous();
+			break;
 		case 39:	//	Right Arrow
 		case 13:	//	Enter
 		case 32:	//	Spacebar
 			viewer.next();
 			break;
-		case 37:	//	Left Arrow
-			viewer.previous();
+		case 33:	//	Page Up
+			viewer.previous(10);
 			break;
 		case 34:	//	Page Down
 			viewer.next(10);
 			break;
-		case 33:	//	Page Up
-			viewer.previous(10);
+		case 36:	//	Home
+			viewer.begin();
 			break;
 		case 35:	//	End
 			viewer.end();
-			break;
-		case 36:	//	Home
-			viewer.begin();
 			break;
 		case 122:	//	F11
 			nw.Window.get().enterFullscreen();
@@ -503,6 +645,18 @@ $(document).ready(function()
 			nw.Window.get().leaveFullscreen();
 			viewer.cancelLoading();
 			break;
+		}
+	});
+	
+	document.addEventListener("mousewheel", (event) =>
+	{
+		if (event.deltaY < 0)
+		{
+			viewer.previous();
+		}
+		else if (event.deltaY > 0)
+		{
+			viewer.next();
 		}
 	});
 	
@@ -590,4 +744,18 @@ $(document).ready(function()
 		$("#title").css("opacity", 1);
 		$("#menu").css("opacity", 1);
 	});
+	
+	
+	
+	nw.Window.get().on("close", function()
+	{
+		//	Save window position.
+		
+		//	Save image position.
+		viewer.terminate();
+		
+		this.close(true);
+	});
+	
+	
 });
