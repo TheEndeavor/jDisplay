@@ -16,6 +16,8 @@
 		<script src="jquery-3.0.0.min.js"></script>
 		<script src="jszip.min.js"></script>
 		
+		<script src="jDisplay/loader.js"></script>
+		<script src="jDisplay/viewer.js"></script>
 		
 		<script src="main.js"></script>
 		
@@ -24,38 +26,35 @@
 	<body style="line-height: 1.15;">
 		<input id="folder-select" type="file" style="display: none;" value="" nwdirectory />
 		
-		
-		<div id="scene" style="position: absolute; width: 100%; height: 100%;">
-			<div id="title"></div>
-			
-			<div id="menu" style="flex: 0; text-align: center;">
-				<div id="bar"></div>
-				
-				<div class="left button-group">
-					<div id="exit" class="button"></div>
+		<div id="title"></div>
 
-					<div id="folder" class="button"></div>
+		<div id="menu" style="flex: 0; text-align: center;">
+			<div id="bar"></div>
 
-					<div id="recursive" class="button"></div>
-				</div>
-				
-				
-				
-				<div class="center button-group">
-					<div id="previous" class="button"></div>
-					<div id="randomize" class="button"></div>
-					<div id="next" class="button"></div>
-				</div>
-				
-				<div class="right button-group">
-					<div id="fullscreen" class="button"></div>
-				</div>
-				
+			<div class="left button-group">
+				<div id="exit" class="button"></div>
+
+				<div id="folder" class="button"></div>
+
+				<div id="recursive" class="button"></div>
 			</div>
-			
-			<div id="image">
-				<span id="error"></span>
+
+
+
+			<div class="center button-group">
+				<div id="previous" class="button"></div>
+				<div id="randomize" class="button"></div>
+				<div id="next" class="button"></div>
 			</div>
+
+			<div class="right button-group">
+				<div id="fullscreen" class="button"></div>
+			</div>
+
 		</div>
+
+		<img id="image" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D" />
+		<div id="message"></div>
+			
 	</body>
 </html>
