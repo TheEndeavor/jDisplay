@@ -14,6 +14,7 @@
 		<link rel="stylesheet" type="text/css" href="styles.css">
 		
 		<script src="jquery-3.0.0.min.js"></script>
+		<script src="tippy.min.js"></script>
 		<script src="jszip.min.js"></script>
 		
 		<script src="jDisplay/loader.js"></script>
@@ -32,23 +33,24 @@
 			<div id="bar"></div>
 
 			<div class="left button-group">
-				<div id="exit" class="button"></div>
-
-				<div id="folder" class="button"></div>
-
-				<div id="recursive" class="button"></div>
+				<div id="exit" class="button" title="Exit the application"></div>
+				
+				<div id="folder" class="button" title="Open a folder"></div>
+				
+				<div id="recursive" class="button" title="Recursively search directories"></div>
 			</div>
 
 
 
 			<div class="center button-group">
-				<div id="previous" class="button"></div>
-				<div id="randomize" class="button"></div>
-				<div id="next" class="button"></div>
+				<div id="previous" class="button" title="Previous Image"></div>
+				<div id="randomize" class="button" title="Randomize Selection"></div>
+				<div id="next" class="button" title="Next Image"></div>
 			</div>
 
 			<div class="right button-group">
-				<div id="fullscreen" class="button"></div>
+				<div id="cake" class="button" title="Delicious Cake!"></div>
+				<div id="fullscreen" class="button" title="Enter or Exit fullscreen"></div>
 			</div>
 
 		</div>

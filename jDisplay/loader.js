@@ -71,9 +71,9 @@ $(document).ready(function()
 			this._options = options;
 			
 			if ((typeof source) === "string")
-				source = [source];
+				this._source = [source];
 			
-			this._loading = source.map((name) => {
+			this._loading = this._source.map((name) => {
 				return new jD.ImageLoader(name.split("\\").join("/"));
 			});
 			this._loadingIndex = 0;
@@ -133,18 +133,26 @@ $(document).ready(function()
 			
 			if (!async)
 			{
-				$.later(0, () =>
-				{
-					this.load();
-				});
+				
+				this.continueLoading();
 			}
+			
+			console.log(this._loadCount);
+		}
+		
+		continueLoading()
+		{
+			$.later(0, () =>
+			{
+				this.load();
+			});
 		}
 		
 		parse(item)
 		{
 			if (item.hasLoader())
 			{
-				item.load();
+				return item.load();
 			}
 			else
 			{
@@ -199,26 +207,22 @@ $(document).ready(function()
 								{
 									if (file.dir)
 										return;
-
+									
 									this._loading.push(new jD.ImageLoader(file.name, () =>
 									{
 										file.async("base64").then((base64) => 
 										{
 											this._images.push(new jD.Image(file.name, `data:image;base64,${base64}`));
 
-											$.later(0, () =>
-											{
-												this.load();
-											});
+											this.continueLoading();
 										});
+										
+										return true;
 									}));
 									
 								});
-
-								$.later(0, () =>
-								{
-									this.load();
-								});
+								
+								this.continueLoading();
 							});
 							
 							return true;

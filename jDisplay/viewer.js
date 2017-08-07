@@ -62,6 +62,12 @@ $(document).ready(function()
 		{
 			this._settings.set(name, value);
 			localStorage.setItem(`setting/${name}`, value);
+			
+			if (name === "randomize")
+			{
+				this._history = [this._index];
+				this._historyIndex = 0;
+			}
 		}
 		
 		init(source)
@@ -72,6 +78,7 @@ $(document).ready(function()
 			
 			this._loader = new jD.Loader(source, {"recursive": this.getSetting("recursive")}, (event, images) =>
 			{
+				this._messageNode.css("display", "block");
 				this._messageNode.text(`Parsing ${event.item}\n\n${jD.Util.commaSeperate(event.index + 1)} of ${jD.Util.commaSeperate(event.count)} (${(event.progress * 100).toFixed(2)}%)`);
 				this._barNode.css("width", `${(event.progress * 100)}%`);
 				
@@ -85,11 +92,11 @@ $(document).ready(function()
 					
 					this._source = source;
 					this._images = images;
-					this._index = -1;
-
-					if ((typeof this._source) === "string")
+					this._index = 0;
+					
+					if (this._source.length === 1)
 					{
-						var saved = localStorage.getItem(`source/${this._source}`);
+						var saved = localStorage.getItem(`source/${this._source[0]}`);
 						if (saved !== null)
 						{
 							try
@@ -104,9 +111,13 @@ $(document).ready(function()
 						}
 					}
 					
+					
+					this._history = [this._index];
+					this._historyIndex = 0;
+					
 					this._loader = null;
 
-					this.next();
+					this.show();
 				}
 			});
 			
@@ -127,10 +138,10 @@ $(document).ready(function()
 			if (!this.isReady())
 				return;
 			
-			if ((typeof this._source) === "string")
+			if (this._source.length === 1)
 			{
 				//	Save current position
-				localStorage.setItem(`source/${this._source}`, JSON.stringify({
+				localStorage.setItem(`source/${this._source[0]}`, JSON.stringify({
 					"index": this._index,
 					"lastAccess": (new Date()).getTime(),
 				}));
@@ -172,6 +183,9 @@ $(document).ready(function()
 		
 		previous(count = 1)
 		{
+			if (this.isLoadingImage())
+				return;
+			
 			if (this.getSetting("randomize"))
 			{
 				this._historyIndex = Math.max(this._historyIndex - count, 0);
@@ -192,9 +206,12 @@ $(document).ready(function()
 		
 		next(count = 1)
 		{
+			if (this.isLoadingImage())
+				return;
+			
 			if (this.getSetting("randomize"))
 			{
-				this._historyIndex = Math.max(this._historyIndex + count, this._history.length - 1);
+				this._historyIndex = Math.min(this._historyIndex + count, this._history.length);
 				var nextIndex = this._index;
 				if (this._historyIndex >= this._history.length)
 				{

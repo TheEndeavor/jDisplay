@@ -170,6 +170,11 @@ body
 	background-image: url("/icon/tree-deep.png");
 }
 
+#cake
+{
+	background-image: url("/icon/cake-cherry.png");
+}
+
 #fullscreen
 {
 	background-image: url("/icon/fullscreen.png");

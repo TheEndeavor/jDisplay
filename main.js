@@ -311,6 +311,11 @@ $(document).ready(function()
 	
 	
 	
+	$("#cake").on("click", (event) =>
+	{
+		$("#cake").css("background-image", `url("/icon/cake-plain.png")`);
+	});
+	
 	$("#fullscreen").on("click", (event) =>
 	{
 		nw.Window.get().toggleFullscreen();
@@ -318,7 +323,7 @@ $(document).ready(function()
 	
 	$("#folder-select").on("change", function(event)
 	{
-		viewer.init($(this).val());
+		viewer.init([$(this).val()]);
 		
 		$(this).val("");
 	});
@@ -327,8 +332,6 @@ $(document).ready(function()
 	{
 		viewer.previous();
 	});
-	
-	
 	
 	$("#next").on("click", (event) =>
 	{
