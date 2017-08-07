@@ -40,3 +40,6 @@ For a custom install or for Linux / Mac users:
 4. (Optional) Rename nw(.exe) to jDisplay(.exe).
 5. Run nw(.exe).
 6. Profit!
+
+## Known Bugs
+* Opening multiple instances leads to "Window Madness". Best to stick to 1 instance until I've found a fix.
