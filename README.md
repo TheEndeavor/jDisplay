@@ -11,12 +11,13 @@ v1.0 made in a day.
 * Remembers history of random images.
 * Works with jpeg, png, bmp, and gifs.
 * Works with Zip files; zip, cbz.
-* Probably less buggy since I've spent more than 1 day on it.
 * Remembers where you left off if you load the same source folder or file.
+* Probably less buggy since I've spent more than 1 day on it.
 
 ## Missing Features
 * Zooming and Dragging the image.
 * Support for more formats, including possibly video.
+* Rar support.
 
 ## Controls
 * F11       - Enter/Exit Fullscreen
