@@ -17,6 +17,9 @@ $(document).ready(function()
 			this._images = [];
 			this._index = -1;
 			
+			this._history = [];
+			this._historyIndex = -1;
+			
 			this._settings = new Map();
 			this.loadSettings();
 			
@@ -137,6 +140,9 @@ $(document).ready(function()
 			this._images = [];
 			this._index = -1;
 			
+			this._history = [];
+			this._historyIndex = -1;
+			
 			this.clearImage();
 			
 			this.clearLoadingImage();
@@ -195,8 +201,8 @@ $(document).ready(function()
 					while (nextIndex === this._index)
 						nextIndex = Math.floor(Math.random() * this._images.length);
 					
-					this._history.push(this._index);
 					this._index = nextIndex;
+					this._history.push(this._index);
 				}
 				else
 				{
