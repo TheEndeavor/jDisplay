@@ -6,7 +6,7 @@ v1.0 made in a day.
 
 ## Features
 * Drag and Drop files or directories to load them.
-* Can recursively search for images in directories to display (with great power comes...).
+* Can recursively search for images in directories to display (with great power...).
 * Can randomize selection of image to display.
 * Remembers history of random images.
 * Works with jpeg, png, bmp, and gifs.
@@ -17,6 +17,7 @@ v1.0 made in a day.
 ## Missing Features
 * Zooming and Dragging the image.
 * Support for more formats, including possibly video.
+* Recussive processing of archives.
 * Rar support.
 
 ## Controls
