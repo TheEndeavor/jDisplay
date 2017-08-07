@@ -222,26 +222,33 @@ $(document).ready(function()
 	};
 	
 	
-	function clearOldSources()
+	(function clearOldSources()
 	{
 		var keys = Object.keys(localStorage);
 		keys = keys.filter((key) => {
-			return key.startsWith("savetime/");
-		}).map((key) => {
-			return key.substring(9);
+			return key.startsWith("source/");
 		});
-
+		
 		$.each(keys, (index, key) =>
 		{
-			var saveTime = localStorage.getItem(`savetime/${key}`);
-			if ((saveTime + (365 * 24 * 60 * 60)) < (new Date()).getTime())
+			var data = localStorage.getItem(key);
+			if (data !== null)
 			{
-				localStorage.removeItem(`position/${key}`);
-				localStorage.removeItem(`savetime/${key}`);
+				try
+				{
+					data = JSON.parse(data);
+					if ((data.lastAccess + (365 * 24 * 60 * 60)) < (new Date()).getTime())
+					{
+						localStorage.removeItem(key);
+					}
+				}
+				catch (e)
+				{
+
+				}
 			}
 		});
-	}
-	clearOldSources();
+	})();
 	
 	
 	

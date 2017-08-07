@@ -158,7 +158,7 @@ $(document).ready(function()
 					return false;
 				}
 				
-				if ((stats.isDirectory() && this._options.recursive) || (this._loadingIndex < this._source.length))
+				if ((stats.isDirectory() && (this._options.recursive || (this._loadingIndex < this._source.length))))
 				{
 					try
 					{
@@ -194,6 +194,7 @@ $(document).ready(function()
 							{
 								var files = [].concat(Object.values(data.files));
 								files.sort((a, b) => { return (a.name < b.name) ? -1 : ((a.name > b.name) ? 1 : 0); });
+								files = files.filter((file) => { var lowerCase = file.name.toLowerCase(); return lowerCase.endsWith(".jpg") || lowerCase.endsWith(".png") || lowerCase.endsWith(".gif") || lowerCase.endsWith(".bmp"); });
 								$.each(files, (name, file) =>
 								{
 									if (file.dir)
