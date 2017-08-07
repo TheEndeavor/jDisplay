@@ -6,16 +6,16 @@ v1.0 made in a day.
 
 ## Features
 * Drag and Drop files or directories to load them.
-* Can recursively search for images in directories to display.
-* Can randomize images to display.
-* Remembers history of randomly drawn images.
+* Can recursively search for images in directories to display (with great power comes...).
+* Can randomize selection of image to display.
+* Remembers history of random images.
 * Works with jpeg, png, bmp, and gifs.
-* Probably buggy because I made it in a day with very little testing.
+* Works with Zip files; zip, cbz.
+* Probably less buggy since I've spent more than 1 day on it.
+* Remembers where you left off if you load the same source folder or file.
 
 ## Missing Features
 * Zooming and Dragging the image.
-* Loading images from Zip Files.
-* Resuming where you left off.
 * Support for more formats, including possibly video.
 
 ## Controls
