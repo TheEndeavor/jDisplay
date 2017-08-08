@@ -121,10 +121,7 @@ $(document).ready(function()
 				}
 			});
 			
-			$.later(0, () =>
-			{
-				this._loader.load();
-			});
+			this._loader.continueLoading();
 		}
 		
 		cancelLoading()
