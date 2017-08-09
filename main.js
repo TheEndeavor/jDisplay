@@ -280,6 +280,7 @@ $(document).ready(function()
 		"titleNode": $("#title"),
 		"messageNode": $("#message"),
 		"barNode": $("#bar"),
+		"loaderNode": $("#loader"),
 	});
 	updateSettings();
 	
@@ -310,10 +311,21 @@ $(document).ready(function()
 	});
 	
 	
-	
+	var cherryIndex = Math.floor(Math.random() * 7) + 1;
 	$("#cake").on("click", (event) =>
 	{
-		$("#cake").css("background-image", `url("/icon/cake-plain.png")`);
+		cherryIndex--;
+		if (cherryIndex <= 0)
+		{
+			$("#cake").css("background-image", `url("/icon/cake-cherry.png")`);
+			cherryIndex = Math.floor(Math.random() * 7) + 1;
+		}
+		else
+		{
+			$("#cake").css("background-image", `url("/icon/cake-plain.png")`);
+		}
+		
+		
 	});
 	
 	$("#fullscreen").on("click", (event) =>

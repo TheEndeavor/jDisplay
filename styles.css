@@ -17,6 +17,21 @@ body
 	z-index: 0;
 }
 
+#loader
+{
+	display: none;
+	
+	position: absolute;
+	
+	left: 50%;
+	top: 50%;
+	
+	transform: translate(-50%, -128px);
+	
+	
+	z-index: 1;
+}
+
 #message
 {
 	position: absolute;

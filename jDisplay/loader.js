@@ -81,6 +81,15 @@ $(document).ready(function()
 			this._images = [];
 			
 			this._callback = callback;
+			
+			
+			this._callback({
+				"done": false,
+				"progress": this._loadingIndex / this._loading.length,
+				"index": this._loadingIndex,
+				"count": this._loading.length,
+				"item": this._loading[this._loadingIndex].getName(),
+			});
 		}
 		
 		isLoading()
@@ -95,27 +104,6 @@ $(document).ready(function()
 		
 		load()
 		{
-			if (!this.isLoading())
-			{
-				this._callback({
-					"done": true,
-					"progress": 1,
-					"index": this._loadingIndex,
-					"count": this._loading.length,
-				}, this._images);
-				
-				return;
-			}
-			
-			var nextItem = this._loading[this._loadingIndex];
-			this._callback({
-				"done": false,
-				"progress": this._loadingIndex / this._loading.length,
-				"index": this._loadingIndex,
-				"count": this._loading.length,
-				"item": nextItem.getName(),
-			});
-			
 			var start = performance.now();
 			var now = start;		
 			
@@ -131,13 +119,30 @@ $(document).ready(function()
 				now = performance.now();
 			}
 			
-			if (!async)
+			if (!this.isLoading())
 			{
+				this._callback({
+					"done": true,
+					"progress": 1,
+					"index": this._loadingIndex,
+					"count": this._loading.length,
+				}, this._images);
 				
-				this.continueLoading();
+				return;
 			}
 			
-			console.log(this._loadCount);
+			this._callback({
+				"done": false,
+				"progress": this._loadingIndex / this._loading.length,
+				"index": this._loadingIndex,
+				"count": this._loading.length,
+				"item": this._loading[this._loadingIndex].getName(),
+			});
+			
+			if (!async)
+			{
+				this.continueLoading();
+			}
 		}
 		
 		continueLoading()

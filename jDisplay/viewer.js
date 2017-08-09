@@ -10,6 +10,13 @@ $(document).ready(function()
 			this._titleNode = jD.Util.readObject(data.titleNode, $("<div></div>"));
 			this._messageNode = jD.Util.readObject(data.messageNode, $("<div></div>"));
 			this._barNode = jD.Util.readObject(data.barNode, $("<div></div>"));
+			this._loaderNode = jD.Util.readObject(data.loaderNode, $("<img />"));
+			
+			
+			this._imageNode.on('dragstart', function(event)
+			{
+				event.preventDefault();
+			});
 			
 			this._loader = null;
 			
@@ -76,6 +83,7 @@ $(document).ready(function()
 			
 			this.cancelLoading();
 			
+			this._loaderNode.css("display", "block");
 			this._loader = new jD.Loader(source, {"recursive": this.getSetting("recursive")}, (event, images) =>
 			{
 				this._messageNode.css("display", "block");
@@ -86,6 +94,7 @@ $(document).ready(function()
 				{
 					this._messageNode.text("");
 					this._barNode.css("width", "0%");
+					this._loaderNode.css("display", "");
 					
 					if (images.length <= 0)
 						this._messageNode.text("No Images Found");
@@ -137,11 +146,19 @@ $(document).ready(function()
 			
 			if (this._source.length === 1)
 			{
-				//	Save current position
-				localStorage.setItem(`source/${this._source[0]}`, JSON.stringify({
-					"index": this._index,
-					"lastAccess": (new Date()).getTime(),
-				}));
+				if (this._index > 0)
+				{
+					//	Save current position.
+					localStorage.setItem(`source/${this._source[0]}`, JSON.stringify({
+						"index": this._index,
+						"lastAccess": (new Date()).getTime(),
+					}));
+				}
+				else
+				{
+					//	Current position is 0 so we can remote it to save space.
+					localStorage.removeItem(`source/${this._source[0]}`);
+				}
 			}
 			
 			this._source = null;
