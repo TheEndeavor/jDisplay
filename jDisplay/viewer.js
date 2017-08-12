@@ -278,10 +278,16 @@ $(document).ready(function()
 			
 			this.clearLoadingImage();
 			
+			var url = image.getSource();
+			if (url instanceof Blob)
+			{
+				url = URL.createObjectURL(image.getSource());
+			}
+			
 			this._loadingImage = $("<img />");
 			this._loadingImage.on("load", (event) =>
 			{
-				this.setImage(image.getSource());
+				this.setImage(url);
 				this.clearLoadingImage();
 			});
 			this._loadingImage.on("error", (event) =>
@@ -292,7 +298,7 @@ $(document).ready(function()
 				
 				this.clearLoadingImage();
 			});
-			this._loadingImage.attr("src", image.getSource());
+			this._loadingImage.attr("src", url);
 			
 			
 			this._titleNode.text(`${image.getName()} [${index + 1} / ${this._images.length}]`);

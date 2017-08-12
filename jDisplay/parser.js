@@ -32,16 +32,41 @@ class ImageLoader
 	}
 };
 
+function b64toBlob(b64Data, contentType, sliceSize)
+{
+	contentType = contentType || '';
+	sliceSize = sliceSize || 512;
+
+	var byteCharacters = atob(b64Data);
+	var byteArrays = [];
+
+	for (var offset = 0; offset < byteCharacters.length; offset += sliceSize)
+	{
+		var slice = byteCharacters.slice(offset, offset + sliceSize);
+		
+		var byteNumbers = new Array(slice.length);
+		for (var i = 0; i < slice.length; i++)
+		{
+			byteNumbers[i] = slice.charCodeAt(i);
+		}
+		
+		var byteArray = new Uint8Array(byteNumbers);
+		
+		byteArrays.push(byteArray);
+	}
+	
+	var blob = new Blob(byteArrays, {type: contentType});
+	return blob;
+}
+
 class Image
 {
 	constructor(data)
 	{
 		this._name = data.name;
-		this._source = ((typeof data.source) === "string") ? data.source : data.name;
-
-		this._encoded = ((typeof data.encoded) === "boolean") ? data.encoded : this._source.startsWith("data:image;base64,");
+		this._source = data.source ? data.source : data.name;
 	}
-
+	
 	getName()
 	{
 		return this._name;
@@ -51,18 +76,12 @@ class Image
 	{
 		return this._source;
 	}
-
-	isEncoded()
-	{
-		return this._encoded;
-	}
 	
 	toJson()
 	{
 		return {
 			"name": this._name,
 			"source": this._source,
-			"encoded": this._encoded,
 		};
 	}
 };
@@ -214,11 +233,13 @@ function parse(item)
 							
 							loading.push(new ImageLoader(file.name, () =>
 							{
-								file.async("base64").then((base64) => 
+								file.async("arraybuffer").then((data) => 
 								{
+									var blob = new Blob([data], {"type": 'image'});
+									
 									images.push(new Image({
 										"name": file.name,
-										"source": `data:image;base64,${base64}`
+										"source": blob,
 									}));
 
 									load();

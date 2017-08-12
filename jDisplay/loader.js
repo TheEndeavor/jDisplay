@@ -39,9 +39,7 @@ $(document).ready(function()
 		constructor(data)
 		{
 			this._name = data.name;
-			this._source = ((typeof data.source) === "string") ? data.source : data.name;
-
-			this._encoded = ((typeof data.encoded) === "boolean") ? data.encoded : this._source.startsWith("data:image;base64,");
+			this._source = data.source ? data.source : data.name;
 		}
 
 		getName()
@@ -54,17 +52,11 @@ $(document).ready(function()
 			return this._source;
 		}
 
-		isEncoded()
-		{
-			return this._encoded;
-		}
-
-		toJSON()
+		toJson()
 		{
 			return {
 				"name": this._name,
 				"source": this._source,
-				"encoded": this._encoded,
 			};
 		}
 	};
