@@ -20,6 +20,7 @@
 		"show_in_taskbar": true,
 		"show": true
 	},
-	"dom_storage_quota": 50
+	"dom_storage_quota": 50,
 	
+	"chromium-args": "--enable-node-worker"
 }

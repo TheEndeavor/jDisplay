@@ -36,27 +36,36 @@ $(document).ready(function()
 	
 	jD.Image = class Image
 	{
-		constructor(name, source)
+		constructor(data)
 		{
-			this._name = name;
-			this._source = source;
-			
-			this._encoded = source.startsWith("data:image;base64,");
+			this._name = data.name;
+			this._source = ((typeof data.source) === "string") ? data.source : data.name;
+
+			this._encoded = ((typeof data.encoded) === "boolean") ? data.encoded : this._source.startsWith("data:image;base64,");
 		}
-		
+
 		getName()
 		{
 			return this._name;
 		}
-		
+
 		getSource()
 		{
 			return this._source;
 		}
-		
+
 		isEncoded()
 		{
 			return this._encoded;
+		}
+
+		toJSON()
+		{
+			return {
+				"name": this._name,
+				"source": this._source,
+				"encoded": this._encoded,
+			};
 		}
 	};
 	
@@ -73,28 +82,51 @@ $(document).ready(function()
 			if ((typeof source) === "string")
 				this._source = [source];
 			
-			this._loading = this._source.map((name) => {
-				return new jD.ImageLoader(name.split("\\").join("/"));
-			});
-			this._loadingIndex = 0;
+			this._progress = 0;
 			
 			this._images = [];
 			
 			this._callback = callback;
 			
-			
 			this._callback({
 				"done": false,
-				"progress": this._loadingIndex / this._loading.length,
-				"index": this._loadingIndex,
-				"count": this._loading.length,
-				"item": this._loading[this._loadingIndex].getName(),
+				"progress": 0,
+				"index": 0,
+				"count": this._source.length,
+				"item": this._source[0],
 			});
+			
+			
+			this._parser = new Worker("/jDisplay/parser.js");
+			this._parser.onmessage = (event) =>
+			{
+				this._progress = event.data.progress;
+				
+				if (event.data.images)
+					this._images = this._images.concat(event.data.images.map((image) => { return new jD.Image(image); }));
+				
+				this._callback({
+					"done": event.data.done,
+					"progress": event.data.progress,
+					"index": event.data.index,
+					"count": event.data.count,
+					"item": event.data.item,
+					"images": this._images,
+				}, this._images);
+			};
+			
+			var data = {
+				"source": this._source,
+				"options": options,
+			};
+
+			this._parser.postMessage(data);
+			
 		}
 		
 		isLoading()
 		{
-			return this._loadingIndex < this._loading.length;
+			return this._progress !== 1;
 		}
 		
 		cancel()
@@ -102,153 +134,5 @@ $(document).ready(function()
 			this._loading = [];
 		}
 		
-		load()
-		{
-			var start = performance.now();
-			var now = start;		
-			
-			var async = false;
-			while ((this._loadingIndex <= (this._loading.length - 1)) && ((now - start < 50)))
-			{
-				async = this.parse(this._loading[this._loadingIndex]);
-				this._loadingIndex++;
-				
-				if (async)
-					break;
-
-				now = performance.now();
-			}
-			
-			if (!this.isLoading())
-			{
-				this._callback({
-					"done": true,
-					"progress": 1,
-					"index": this._loadingIndex,
-					"count": this._loading.length,
-				}, this._images);
-				
-				return;
-			}
-			
-			this._callback({
-				"done": false,
-				"progress": this._loadingIndex / this._loading.length,
-				"index": this._loadingIndex,
-				"count": this._loading.length,
-				"item": this._loading[this._loadingIndex].getName(),
-			});
-			
-			if (!async)
-			{
-				this.continueLoading();
-			}
-		}
-		
-		continueLoading()
-		{
-			$.later(0, () =>
-			{
-				this.load();
-			});
-		}
-		
-		parse(item)
-		{
-			if (item.hasLoader())
-			{
-				return item.load();
-			}
-			else
-			{
-				var stats;
-				try
-				{
-					stats = filesystem.lstatSync(item.getName());
-				}
-				catch (e)
-				{
-					return false;
-				}
-				
-				if ((stats.isDirectory() && (this._options.recursive || (this._loadingIndex < this._source.length))))
-				{
-					try
-					{
-						var content = filesystem.readdirSync(item.getName()).map((file) =>
-						{
-							return new jD.ImageLoader(`${item.getName()}/${file}`.split("\\").join("/"));
-						});
-						this._loading = this._loading.concat(content);
-					}
-					catch (e)
-					{
-						
-					}
-				}
-				else
-				{
-					var lowerCase = item.getName().toLowerCase();
-					if (lowerCase.endsWith(".jpg") ||
-						lowerCase.endsWith(".png") ||
-						lowerCase.endsWith(".gif") ||
-						lowerCase.endsWith(".bmp"))
-					{
-						this._images.push(new jD.Image(item.getName(), `file:////${item.getName()}`));
-					}
-					else if (lowerCase.endsWith(".zip") ||
-						lowerCase.endsWith(".cbz"))
-					{
-						if (this._options.recursive || (this._loadingIndex < this._source.length))
-						{
-							var content = filesystem.readFileSync(item.getName());
-							var async = JSZip.loadAsync(content);
-							async.then((data) =>
-							{
-								var files = [].concat(Object.values(data.files));
-								files.sort((a, b) => { return (a.name < b.name) ? -1 : ((a.name > b.name) ? 1 : 0); });
-								files = files.filter((file) => { var lowerCase = file.name.toLowerCase(); return lowerCase.endsWith(".jpg") || lowerCase.endsWith(".png") || lowerCase.endsWith(".gif") || lowerCase.endsWith(".bmp"); });
-								$.each(files, (name, file) =>
-								{
-									if (file.dir)
-										return;
-									
-									this._loading.push(new jD.ImageLoader(file.name, () =>
-									{
-										file.async("base64").then((base64) => 
-										{
-											this._images.push(new jD.Image(file.name, `data:image;base64,${base64}`));
-
-											this.continueLoading();
-										});
-										
-										return true;
-									}));
-									
-								});
-								
-								this.continueLoading();
-							});
-							
-							return true;
-						}
-
-						return false;
-						
-					}
-					else if (lowerCase.endsWith(".rar") ||
-						lowerCase.endsWith("cbr"))
-					{
-						
-					}
-				}
-				
-			}
-			
-			return false;
-		}
-		
 	};
-	
-	
 });

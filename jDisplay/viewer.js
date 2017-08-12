@@ -130,7 +130,7 @@ $(document).ready(function()
 				}
 			});
 			
-			this._loader.continueLoading();
+//			this._loader.continueLoading();
 		}
 		
 		cancelLoading()
