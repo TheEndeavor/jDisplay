@@ -44,6 +44,4 @@ For a custom install or for Linux / Mac users:
 
 ## Known Bugs
 * Opening multiple instances leads to "Window Madness". Best to stick to 1 instance until I've found a fix.
-* Loading / Parsing sucks. Should be moved off to another thread.
-* Zip extracting is slow, and files are processed in the wrong order. Causes increased memory usage.
-* Large images from archives are slow due to Base64 decoding. Probably nothing I can do.
+* Zip extracting is processed in the wrong order. Causes increased memory usage.
