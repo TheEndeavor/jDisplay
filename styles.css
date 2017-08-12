@@ -84,6 +84,33 @@ body
 	z-index: 10;
 }
 
+#title .name
+{
+	overflow: hidden;
+	
+	white-space: nowrap;
+	
+	text-overflow: ellipsis;
+	
+	direction: rtl;
+}
+
+#title .padding
+{
+	float: left;
+	
+	height: 1px;
+	
+	margin-right: 24px;
+}
+
+#title .counter
+{
+	float: right;
+	
+	margin-left: 24px;
+}
+
 #menu
 {
 	position: absolute;

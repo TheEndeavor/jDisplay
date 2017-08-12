@@ -111,7 +111,7 @@ $(document).ready(function()
 							try
 							{
 								saved = JSON.parse(saved);
-								this._index = $.isNumber(saved.index) ? saved.index : this._index;
+								this._index = Math.min($.isNumber(saved.index) ? saved.index : this._index, this._images.length - 1);
 							}
 							catch (e)
 							{
@@ -171,6 +171,10 @@ $(document).ready(function()
 			this.clearImage();
 			
 			this.clearLoadingImage();
+			
+			this._titleNode.find(".name").text("");
+			this._titleNode.find(".counter").text("");
+			this._titleNode.find(".padding").css("width", 0);
 		}
 		
 		isReady()
@@ -207,6 +211,9 @@ $(document).ready(function()
 			}
 			else
 			{
+				if (this._index === 0)
+					return;
+				
 				this._index = Math.max(this._index - count, 0);
 			}
 			
@@ -242,6 +249,9 @@ $(document).ready(function()
 			}
 			else
 			{
+				if (this._index === (this._images.length - 1))
+					return;
+				
 				this._index = Math.min(this._index + count, this._images.length - 1);
 			}
 			
@@ -301,8 +311,9 @@ $(document).ready(function()
 			this._loadingImage.attr("src", url);
 			
 			
-			this._titleNode.text(`${image.getName()} [${index + 1} / ${this._images.length}]`);
-			this._titleNode.text(image.getName());
+			this._titleNode.find(".name").text(image.getName());
+			this._titleNode.find(".counter").text(`${jD.Util.commaSeperate(index + 1)} / ${jD.Util.commaSeperate(this._images.length)}`);
+			this._titleNode.find(".padding").css("width", this._titleNode.find(".counter").width());
 		}
 		
 		setImage(src)

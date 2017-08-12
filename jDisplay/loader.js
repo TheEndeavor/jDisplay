@@ -5,8 +5,6 @@ $(document).ready(function()
 	var filesystem = require("fs");
 	
 	
-	window.jD = {};
-	
 	jD.ImageLoader = class ImageLoader
 	{
 		constructor(name, loader = null)
@@ -29,35 +27,6 @@ $(document).ready(function()
 		load()
 		{
 			return this._loader();
-		}
-	};
-	
-	
-	
-	jD.Image = class Image
-	{
-		constructor(data)
-		{
-			this._name = data.name;
-			this._source = data.source ? data.source : data.name;
-		}
-
-		getName()
-		{
-			return this._name;
-		}
-
-		getSource()
-		{
-			return this._source;
-		}
-
-		toJson()
-		{
-			return {
-				"name": this._name,
-				"source": this._source,
-			};
 		}
 	};
 	
