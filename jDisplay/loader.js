@@ -103,7 +103,7 @@ $(document).ready(function()
 				this._progress = event.data.progress;
 				
 				if (event.data.images)
-					this._images = this._images.concat(event.data.images.map((image) => { return new jD.Image(image); }));
+					this._images.push.apply(this._images, event.data.images.map((image) => { return new jD.Image(image); }));
 				
 				this._callback({
 					"done": event.data.done,
@@ -131,7 +131,16 @@ $(document).ready(function()
 		
 		cancel()
 		{
-			this._loading = [];
+			this._parser.terminate();
+			
+			this._callback({
+				"done": true,
+				"progress": 1,
+				"index": 0,
+				"count": 0,
+				"item": "",
+				"images": this._images,
+			}, this._images);
 		}
 		
 	};

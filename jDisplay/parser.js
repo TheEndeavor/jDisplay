@@ -105,22 +105,7 @@ function load()
 {
 	do
 	{
-		var start = performance.now();
-		var now = start;		
-
-		var asyncWait = false;
-		while ((index <= (loading.length - 1)) && ((now - start < 50)))
-		{
-			asyncWait = parse(loading[index]);
-			index++;
-
-			if (asyncWait)
-				break;
-			
-			now = performance.now();
-		}
-		
-		if ((index >= (loading.length)))
+		if (!asyncWait && (index >= (loading.length)))
 		{
 			postMessage({
 				"done": true,
@@ -144,7 +129,22 @@ function load()
 		});
 		images = [];
 		
-	} while (!asyncWait && (index <= (loading.length - 1)));
+		var start = performance.now();
+		var now = start;
+		
+		var asyncWait = false;
+		while ((index <= (loading.length - 1)) && ((now - start < 50)))
+		{
+			asyncWait = parse(loading[index]);
+			index++;
+			
+			if (asyncWait)
+				break;
+			
+			now = performance.now();
+		}
+		
+	} while (!asyncWait);
 }
 
 
@@ -174,7 +174,8 @@ function parse(item)
 				{
 					return new ImageLoader(`${item.getName()}/${file}`.split("\\").join("/"));
 				});
-				loading = loading.concat(content);
+				
+				loading.push.apply(loading, content);
 			}
 			catch (e)
 			{
@@ -206,12 +207,12 @@ function parse(item)
 						var files = [].concat(Object.values(data.files));
 						files.sort((a, b) => { return (a.name < b.name) ? -1 : ((a.name > b.name) ? 1 : 0); });
 						files = files.filter((file) => { var lowerCase = file.name.toLowerCase(); return lowerCase.endsWith(".jpg") || lowerCase.endsWith(".png") || lowerCase.endsWith(".gif") || lowerCase.endsWith(".bmp"); });
-						$.each(files, (name, file) =>
+						files.forEach((file) =>
 						{
 							if (file.dir)
 								return;
-
-							loading.push(new jD.ImageLoader(file.name, () =>
+							
+							loading.push(new ImageLoader(file.name, () =>
 							{
 								file.async("base64").then((base64) => 
 								{
