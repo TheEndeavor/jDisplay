@@ -1,3 +1,4 @@
+//	Weird bug with NW.js where scripts load wrong the first time?
 if (!window.$)
 	location.reload();
 
@@ -7,27 +8,16 @@ $(document).ready(function()
 	
 	var filesystem = require("fs");
 	
-	
-	nw.App.on("open", function(args)
+	function generateUuidV4()
 	{
-		nw.Window.open("index.html", {
-			"focus": true,
-			
-			"new_instance": true,
-			
-			"frame": true,
-			"width": 1280,
-			"height": 720,
-			"min_width": 800,
-			"min_height": 600,
-			"show_in_taskbar": true,
-			"show": true
-			
-		}, function(otherWindow)
+		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c)
 		{
-			console.log(otherWindow);
+			var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+			return v.toString(16);
 		});
-	});
+	}
+	var uuid = generateUuidV4();
+	
 	
 	
 	$.extend(
@@ -254,12 +244,46 @@ $(document).ready(function()
 	
 	
 	
+	function updateUpenListener()
+	{
+		nw.App.removeAllListeners("open");
+		
+		var listener = localStorage.getItem("openListener");
+		if ((listener === null) || (listener === uuid))
+		{
+			localStorage.setItem("openListener", uuid);
+			nw.App.on("open", function(args)
+			{
+				console.log(`${uuid} opens new window.`);
+				nw.Window.open("index.html", {
+					"focus": true,
+					
+					"new_instance": true,
+					
+					"frame": true,
+					"width": 1280,
+					"height": 720,
+					"min_width": 800,
+					"min_height": 600,
+					"show_in_taskbar": true,
+					"show": true
+					
+				}, function(otherWindow)
+				{
+					console.log(otherWindow);
+				});
+			});
+		}
+	}
+	updateUpenListener();
 	
 	
 	$(window).on("storage", (event) =>
 	{
 		viewer.loadSettings();
 		updateSettings();
+		
+		updateOpenListener();
 	});
 	
 	function updateSettings()
@@ -498,6 +522,7 @@ $(document).ready(function()
 		//	Save image position.
 		viewer.dispose();
 		
+		localStorage.removeItem("openListener");
 		this.close(true);
 	});
 	

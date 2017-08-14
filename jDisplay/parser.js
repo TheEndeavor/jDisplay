@@ -16,17 +16,17 @@ class ImageLoader
 
 		this._loader = loader;
 	}
-
+	
 	getName()
 	{
 		return this._name;
 	}
-
+	
 	hasLoader()
 	{
 		return this._loader !== null;
 	}
-
+	
 	load()
 	{
 		return this._loader();
@@ -209,7 +209,7 @@ function parse(item)
 				}
 
 				return false;
-
+				
 			}
 			else if (lowerCase.endsWith(".rar") ||
 				lowerCase.endsWith("cbr"))
