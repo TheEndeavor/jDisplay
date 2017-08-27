@@ -10,6 +10,7 @@ $(document).ready(function()
 			this._titleNode = jD.Util.readObject(data.titleNode, $("<div></div>"));
 			this._messageNode = jD.Util.readObject(data.messageNode, $("<div></div>"));
 			this._barNode = jD.Util.readObject(data.barNode, $("<div></div>"));
+			this._tabNode = jD.Util.readObject(data.tabNode, $("<img></img>"));
 			this._loaderNode = jD.Util.readObject(data.loaderNode, $("<img />"));
 			
 			
@@ -26,6 +27,10 @@ $(document).ready(function()
 			
 			this._history = [];
 			this._historyIndex = -1;
+			
+			this._zoomMode = "fill";
+			this._zoom = 100;
+			this._previousZoomTime = (new Date()).getTime();
 			
 			this._settings = new Map();
 			this.loadSettings();
@@ -125,7 +130,9 @@ $(document).ready(function()
 					this._historyIndex = 0;
 					
 					this._loader = null;
-
+					
+					this._tabNode.css("display", "block");
+					
 					this.show();
 				}
 			});
@@ -168,13 +175,19 @@ $(document).ready(function()
 			this._history = [];
 			this._historyIndex = -1;
 			
+			this._zoomMode = "fill";
+			this._zoom = 100;
+			
 			this.clearImage();
 			
 			this.clearLoadingImage();
 			
+			this._barNode.css("width", "");
+			this._tabNode.css("display", "");
+			
 			this._titleNode.find(".name").text("");
 			this._titleNode.find(".counter").text("");
-			this._titleNode.find(".padding").css("width", 0);
+			this._titleNode.find(".scale").text("");
 		}
 		
 		isReady()
@@ -197,6 +210,62 @@ $(document).ready(function()
 			if (!this.isReady())
 				return "";
 			return this._images[this._index].getName();
+		}
+		
+		getZoom()
+		{
+			return this._zoom;
+		}
+		
+		zoomIn(amount)
+		{
+			if (this._zoomMode === "fill")
+				this.toggleZoom();
+			
+			var currentTime = (new Date()).getTime();
+			var change = Math.max(Math.round((1 + (300 - (currentTime - this._previousZoomTime)) / 50) * (this._zoom / 100)), 1);
+			this._previousZoomTime = currentTime;
+			this._zoom = Math.min(this._zoom + change, 9999);
+			this._imageNode.css("zoom", `${this._zoom}%`);
+			
+			this._titleNode.find(".scale").text(`${this._zoom}%`);
+		}
+		
+		zoomOut(amount)
+		{
+			if (this._zoomMode === "fill")
+				this.toggleZoom();
+			
+			var currentTime = (new Date()).getTime();
+			var change = Math.max(Math.round((1 + (300 - (currentTime - this._previousZoomTime)) / 50) * (this._zoom / 100)), 1);
+			this._previousZoomTime = currentTime;
+			this._zoom = Math.max(this._zoom - change, 1);
+			this._imageNode.css("zoom", `${this._zoom}%`);
+			
+			this._titleNode.find(".scale").text(`${this._zoom}%`);
+		}
+		
+		toggleZoom()
+		{
+			if (this._zoomMode === "fill")
+			{
+				this._zoomMode = "zoom";
+				this._zoom = 100;
+				
+				this._imageNode.addClass("zoomed");
+				this._imageNode.css("zoom", "100%");
+				
+				this._titleNode.find(".scale").text(`${this._zoom}%`);
+			}
+			else
+			{
+				this._zoomMode = "fill";
+				
+				this._imageNode.removeClass("zoomed");
+				this._imageNode.css("zoom", "");
+				
+				this._titleNode.find(".scale").text("Fill");
+			}
 		}
 		
 		previous(count = 1)
@@ -270,6 +339,15 @@ $(document).ready(function()
 			}
 		}
 		
+		set(index)
+		{
+			if (this._index === index)
+				return;
+			
+			this._index = Math.min(Math.max(index, 0), this._images.length - 1);
+			this.show();
+		}
+		
 		show(index = -1)
 		{
 			if (this._images.length <= 0)
@@ -285,6 +363,7 @@ $(document).ready(function()
 			
 			this._messageNode.css("display", "none");
 			this._barNode.css("width", `${(index / (this._images.length - 1) * 100)}%`);
+			this._tabNode.css("left", `${(index / (this._images.length - 1) * 100)}%`);
 			
 			this.clearLoadingImage();
 			
@@ -313,7 +392,7 @@ $(document).ready(function()
 			
 			this._titleNode.find(".name").text(image.getName());
 			this._titleNode.find(".counter").text(`${jD.Util.commaSeperate(index + 1)} / ${jD.Util.commaSeperate(this._images.length)}`);
-			this._titleNode.find(".padding").css("width", this._titleNode.find(".counter").width());
+			this._titleNode.find(".scale").text((this._zoomMode === "zoom") ? `${this._zoom}%` : "Fill");
 		}
 		
 		setImage(src)

@@ -268,9 +268,6 @@ $(document).ready(function()
 					"show_in_taskbar": true,
 					"show": true
 					
-				}, function(otherWindow)
-				{
-					console.log(otherWindow);
 				});
 			});
 		}
@@ -304,6 +301,7 @@ $(document).ready(function()
 		"titleNode": $("#title"),
 		"messageNode": $("#message"),
 		"barNode": $("#bar"),
+		"tabNode": $("#tab"),
 		"loaderNode": $("#loader"),
 	});
 	updateSettings();
@@ -352,6 +350,12 @@ $(document).ready(function()
 		
 	});
 	
+	$("#zoom").on("click", (event) =>
+	{
+		viewer.toggleZoom();
+	});
+	
+	
 	$("#fullscreen").on("click", (event) =>
 	{
 		nw.Window.get().toggleFullscreen();
@@ -376,6 +380,98 @@ $(document).ready(function()
 			viewer.next();
 		}
 	});
+	
+	
+	{
+		//	Image Dragger
+		var windowWidth = $(window).width();
+		var windowHeight = $(window).height();
+		
+		var mouseStartX = 0;
+		var mouseStartY = 0;
+		
+		var imageStartX = 0;
+		var imageStartY = 0;
+		
+		function mouseMove(event)
+		{
+			var mouseX = event.clientX;
+			var mouseY = event.clientY;
+			
+			var newImageX = 50;
+			var newImageY = 50;
+			
+			var imageNode = $("#image");
+			if ((imageNode[0].naturalWidth * viewer.getZoom()) > windowWidth)
+			{
+				var offsetX = (mouseStartX - mouseX) / ((imageNode[0].naturalWidth * (viewer.getZoom() / 100)) - windowWidth);
+				newImageX = Math.min(Math.max(imageStartX + offsetX * 100, 0), 100);
+			}
+			
+			if ((imageNode[0].naturalHeight * viewer.getZoom()) > windowHeight)
+			{
+				var offsetY = (mouseStartY - mouseY) / ((imageNode[0].naturalHeight * (viewer.getZoom() / 100)) - windowHeight);
+				newImageY = Math.min(Math.max(imageStartY + offsetY * 100, 0), 100);
+			}
+			
+			$("#image").css("object-position", `${newImageX}% ${newImageY}%`);
+		}
+		
+		function mouseUp(event)
+		{
+			$(document).off("mousemove", mouseMove);
+			$(document).off("mouseup", mouseUp);
+		}
+		
+		$("#image").on("mousedown", function(event)
+		{
+			$(document).on("mousemove", mouseMove);
+			$(document).on("mouseup", mouseUp);
+			
+			windowWidth = $(window).width();
+			windowHeight = $(window).height();
+			
+			mouseStartX = event.clientX;
+			mouseStartY = event.clientY;
+			
+			var imageStart = $("#image").css("object-position").split(" ");
+			imageStartX = parseFloat(imageStart[0]);
+			imageStartY = parseFloat(imageStart[1]);
+			
+			event.stopPropagation();
+			
+			return false;
+		});
+	}
+	
+	{
+		//	Tab Slider
+		
+		function mouseMove(event)
+		{
+			var mousePos = event.clientX;
+			var width = $(window).width();
+			
+			var index = Math.round((mousePos / width) * (viewer.getCount() - 1));
+			viewer.set(index);
+		}
+		
+		function mouseUp(event)
+		{
+			$(document).off("mousemove", mouseMove);
+			$(document).off("mouseup", mouseUp);
+		}
+		
+		$("#tab").on("mousedown", function(event)
+		{
+			$(document).on("mousemove", mouseMove);
+			$(document).on("mouseup", mouseUp);
+			
+			event.stopPropagation();
+			
+			return false;
+		});
+	}
 	
 	$("#image").on("dblclick", (event) =>
 	{
@@ -417,13 +513,19 @@ $(document).ready(function()
 	
 	document.addEventListener("mousewheel", (event) =>
 	{
-		if (event.deltaY < 0)
+		if (event.ctrlKey === true)
 		{
-			viewer.previous();
+			if (event.deltaY < 0)
+				viewer.zoomIn(-event.deltaY);
+			else if (event.deltaY > 0)
+				viewer.zoomOut(event.deltaY);
 		}
-		else if (event.deltaY > 0)
+		else
 		{
-			viewer.next();
+			if (event.deltaY < 0)
+				viewer.previous();
+			else if (event.deltaY > 0)
+				viewer.next();
 		}
 	});
 	
@@ -481,7 +583,7 @@ $(document).ready(function()
 			hideTimeout = null;
 		}
 		
-		$("#image").css("cursor", "default");
+		$("#image").css("cursor", "");
 		hideTimeout = $.later(2500, hide);
 	}
 	$("#image").on("mousemove", startHideTimeout);

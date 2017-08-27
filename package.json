@@ -9,6 +9,7 @@
 	"author": "Brock Kokot",
 	"window": {
 		"title": "jDisplay",
+		"icon": "/icon/icon.png",
 		"id": "Main Window",
 		"frame": true,
 		"width": 1280,
@@ -19,6 +20,7 @@
 		"show": true
 	},
 	"dom_storage_quota": 50,
+	"js-flags": "--max-old-space-size=4096 --max_new_space_size=4096",
 	"chromium-args": "--enable-node-worker",
 	"dependencies": {
 		"node-unrar-js": "^0.8.1"

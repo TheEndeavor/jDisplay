@@ -1,6 +1,8 @@
 
 body
 {
+	overflow: hidden;
+	
 	background-color: rgb(8, 8, 8);
 }
 
@@ -15,6 +17,15 @@ body
 	object-position: 50% 50%;
 	
 	z-index: 0;
+}
+
+#image.zoomed
+{
+	object-fit: none;
+	
+	zoom: 100%;
+	
+	cursor: -webkit-grab;
 }
 
 #loader
@@ -79,7 +90,7 @@ body
 	
 	transition: opacity 0.6s;
 	
-	background-color: rgba(0, 0, 0, 0.9);
+	background-color: rgba(0, 0, 0, 0.75);
 	
 	z-index: 10;
 }
@@ -95,11 +106,9 @@ body
 	direction: rtl;
 }
 
-#title .padding
+#title .scale
 {
 	float: left;
-	
-	height: 1px;
 	
 	margin-right: 24px;
 }
@@ -121,7 +130,7 @@ body
 	
 	transition: opacity 0.6s;
 	
-	background-color: rgba(0, 0, 0, 0.9);
+	background-color: rgba(0, 0, 0, 0.75);
 	
 	z-index: 10;
 }
@@ -131,11 +140,32 @@ body
 	position: absolute;
 	
 	height: 2px;
+	width: 0%;
 	
 	left: 0px;
 	top: -2px;
 	
 	background-color: gray;
+}
+
+#tab
+{
+	display: none;
+	
+	position: absolute;
+	
+	width: 32px;
+	
+	top: -38px;
+	
+	margin-left: -20px;
+	
+	padding: 4px;
+	
+	opacity: 0.65;
+	
+	filter: drop-shadow(2px 2px 2px black);
+	
 }
 
 .button-group
@@ -215,6 +245,11 @@ body
 #cake
 {
 	background-image: url("/icon/cake-cherry.png");
+}
+
+#zoom
+{
+	background-image: url("/icon/zoom.png");
 }
 
 #fullscreen
