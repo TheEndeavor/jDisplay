@@ -32,6 +32,9 @@ $(document).ready(function()
 			this._zoom = 100;
 			this._previousZoomTime = (new Date()).getTime();
 			
+			this._imageX = 50;
+			this._imageY = 50;
+			
 			this._settings = new Map();
 			this.loadSettings();
 			
@@ -212,9 +215,30 @@ $(document).ready(function()
 			return this._images[this._index].getName();
 		}
 		
+		updateTopLeft()
+		{
+			if (this._zoomMode === "zoom")
+				this._titleNode.find(".scale").text(`${this._zoom}% (${this.getImageX().toFixed(0)}% ${this.getImageY().toFixed(0)}%)`);
+			else
+				this._titleNode.find(".scale").text("Fill");
+		}
+		
 		getZoom()
 		{
 			return this._zoom;
+		}
+		
+		setZoom(zoom)
+		{
+			if (this._zoomMode === "fill")
+				this.toggleZoom();
+			
+			this._zoom = Math.min(Math.max(zoom, 0), 999);
+			this._imageNode.css("zoom", `${this._zoom}%`);
+			
+			this.ensurePosition();
+			
+			this.updateTopLeft();
 		}
 		
 		zoomIn(amount)
@@ -225,10 +249,8 @@ $(document).ready(function()
 			var currentTime = (new Date()).getTime();
 			var change = Math.max(Math.round((1 + (300 - (currentTime - this._previousZoomTime)) / 50) * (this._zoom / 100)), 1);
 			this._previousZoomTime = currentTime;
-			this._zoom = Math.min(this._zoom + change, 9999);
-			this._imageNode.css("zoom", `${this._zoom}%`);
 			
-			this._titleNode.find(".scale").text(`${this._zoom}%`);
+			this.setZoom(this._zoom + change);
 		}
 		
 		zoomOut(amount)
@@ -239,10 +261,8 @@ $(document).ready(function()
 			var currentTime = (new Date()).getTime();
 			var change = Math.max(Math.round((1 + (300 - (currentTime - this._previousZoomTime)) / 50) * (this._zoom / 100)), 1);
 			this._previousZoomTime = currentTime;
-			this._zoom = Math.max(this._zoom - change, 1);
-			this._imageNode.css("zoom", `${this._zoom}%`);
 			
-			this._titleNode.find(".scale").text(`${this._zoom}%`);
+			this.setZoom(this._zoom - change);
 		}
 		
 		toggleZoom()
@@ -255,17 +275,56 @@ $(document).ready(function()
 				this._imageNode.addClass("zoomed");
 				this._imageNode.css("zoom", "100%");
 				
-				this._titleNode.find(".scale").text(`${this._zoom}%`);
+				this.positionImage(50, 50);
 			}
 			else
 			{
+				this.positionImage(50, 50);
+				
 				this._zoomMode = "fill";
 				
 				this._imageNode.removeClass("zoomed");
 				this._imageNode.css("zoom", "");
-				
-				this._titleNode.find(".scale").text("Fill");
 			}
+			
+			this.updateTopLeft();
+		}
+		
+		getImageX()
+		{
+			return this._imageX;
+		}
+		
+		getImageY()
+		{
+			return this._imageY;
+		}
+		
+		positionImage(x, y)
+		{
+			if (this._zoomMode !== "zoom")
+				return;
+			
+			this._imageX = x;
+			this._imageY = y;
+			
+			this._imageNode.css("object-position", `${this._imageX}% ${this._imageY}%`);
+			
+			this.updateTopLeft();
+		}
+		
+		ensurePosition()
+		{
+			var imageX = this.getImageX();
+			var imageY = this.getImageY();
+
+			if (this.getImageWidth() < $(window).width())
+				imageX = 50;
+
+			if (this.getImageHeight() < $(window).height())
+				imageY = 50;
+		
+			this.positionImage(imageX, imageY);
 		}
 		
 		previous(count = 1)
@@ -378,6 +437,7 @@ $(document).ready(function()
 			{
 				this.setImage(url);
 				this.clearLoadingImage();
+				this.positionImage(50, 50);
 			});
 			this._loadingImage.on("error", (event) =>
 			{
@@ -392,7 +452,7 @@ $(document).ready(function()
 			
 			this._titleNode.find(".name").text(image.getName());
 			this._titleNode.find(".counter").text(`${jD.Util.commaSeperate(index + 1)} / ${jD.Util.commaSeperate(this._images.length)}`);
-			this._titleNode.find(".scale").text((this._zoomMode === "zoom") ? `${this._zoom}%` : "Fill");
+			this.updateTopLeft();
 		}
 		
 		setImage(src)
@@ -416,6 +476,16 @@ $(document).ready(function()
 				this._loadingImage.off();
 			
 			this._loadingImage = null;
+		}
+		
+		getImageWidth()
+		{
+			return this._imageNode[0].naturalWidth * (this._zoom / 100);
+		}
+		
+		getImageHeight()
+		{
+			return this._imageNode[0].naturalHeight * (this._zoom / 100);
 		}
 		
 	};

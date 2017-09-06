@@ -8,17 +8,17 @@
 			this._name = data.name;
 			this._source = data.source ? data.source : data.name;
 		}
-
+		
 		getName()
 		{
 			return this._name;
 		}
-
+		
 		getSource()
 		{
 			return this._source;
 		}
-
+		
 		toJson()
 		{
 			return {

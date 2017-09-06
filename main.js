@@ -355,11 +355,35 @@ $(document).ready(function()
 		viewer.toggleZoom();
 	});
 	
-	
 	$("#fullscreen").on("click", (event) =>
 	{
 		nw.Window.get().toggleFullscreen();
 	});
+	
+	$("#about").on("click", (event) =>
+	{
+		showAbout();
+	});
+	
+	$("#about-modal").on("click", (event) =>
+	{
+		hideAbout();
+	});
+	
+	function showAbout()
+	{
+		$("#about-modal").css("width", "100%");
+		$("#about-modal").css("height", "100%");
+		$("#about-modal").css("opacity", "1");
+	}
+	
+	function hideAbout()
+	{
+		$("#about-modal").css("width", "");
+		$("#about-modal").css("height", "");
+		$("#about-modal").css("opacity", "0");
+	}
+	
 	
 	$("#folder-select").on("change", function(event)
 	{
@@ -398,29 +422,33 @@ $(document).ready(function()
 			var mouseX = event.clientX;
 			var mouseY = event.clientY;
 			
-			var newImageX = 50;
-			var newImageY = 50;
+			var imageX = 50;
+			var imageY = 50;
 			
 			var imageNode = $("#image");
-			if ((imageNode[0].naturalWidth * viewer.getZoom()) > windowWidth)
+			if (viewer.getImageWidth() > windowWidth)
 			{
-				var offsetX = (mouseStartX - mouseX) / ((imageNode[0].naturalWidth * (viewer.getZoom() / 100)) - windowWidth);
-				newImageX = Math.min(Math.max(imageStartX + offsetX * 100, 0), 100);
+				var offsetX = (mouseStartX - mouseX) / (viewer.getImageWidth() - windowWidth);
+				imageX = Math.min(Math.max(imageStartX + offsetX * 100, 0), 100);
 			}
 			
-			if ((imageNode[0].naturalHeight * viewer.getZoom()) > windowHeight)
+			if (viewer.getImageHeight() > windowHeight)
 			{
-				var offsetY = (mouseStartY - mouseY) / ((imageNode[0].naturalHeight * (viewer.getZoom() / 100)) - windowHeight);
-				newImageY = Math.min(Math.max(imageStartY + offsetY * 100, 0), 100);
+				var offsetY = (mouseStartY - mouseY) / (viewer.getImageHeight() - windowHeight);
+				imageY = Math.min(Math.max(imageStartY + offsetY * 100, 0), 100);
 			}
 			
-			$("#image").css("object-position", `${newImageX}% ${newImageY}%`);
+			viewer.positionImage(imageX, imageY);
+			
+			$("#image").css("cursor", "-webkit-grabbing");
 		}
 		
 		function mouseUp(event)
 		{
 			$(document).off("mousemove", mouseMove);
 			$(document).off("mouseup", mouseUp);
+			
+			$("#image").css("cursor", "");
 		}
 		
 		$("#image").on("mousedown", function(event)
@@ -434,9 +462,11 @@ $(document).ready(function()
 			mouseStartX = event.clientX;
 			mouseStartY = event.clientY;
 			
-			var imageStart = $("#image").css("object-position").split(" ");
-			imageStartX = parseFloat(imageStart[0]);
-			imageStartY = parseFloat(imageStart[1]);
+			imageStartX = viewer.getImageX();
+			imageStartY = viewer.getImageY();
+			
+			$("#image").css("cursor", "-webkit-grabbing");
+			console.log($("#image").css("cursor"));
 			
 			event.stopPropagation();
 			
@@ -480,6 +510,8 @@ $(document).ready(function()
 	
 	$(document).on("keydown", (event) =>
 	{
+		hideAbout();
+		
 		switch (event.which)
 		{
 		case 37:	//	Left Arrow
@@ -504,15 +536,22 @@ $(document).ready(function()
 			break;
 		case 122:	//	F11
 			nw.Window.get().enterFullscreen();
+			break;
 		case 27:	//	Escape
 			nw.Window.get().leaveFullscreen();
 			viewer.cancelLoading();
+			break;
+		case 48:	//	Key 0
+			if (event.ctrlKey)
+				viewer.setZoom(100);
 			break;
 		}
 	});
 	
 	document.addEventListener("mousewheel", (event) =>
 	{
+		hideAbout();
+		
 		if (event.ctrlKey === true)
 		{
 			if (event.deltaY < 0)
@@ -558,7 +597,7 @@ $(document).ready(function()
 	
 	
 	var hideTimeout = null;
-	function hide()
+	function hideUi()
 	{
 		$("#title").css("opacity", 0);
 		$("#menu").css("opacity", 0);
@@ -570,7 +609,7 @@ $(document).ready(function()
 		}
 		$("#image").css("cursor", "none");
 	}
-	$("#image").on("click", hide);
+	$("#image").on("click", hideUi);
 	
 	function startHideTimeout(event)
 	{
@@ -584,7 +623,7 @@ $(document).ready(function()
 		}
 		
 		$("#image").css("cursor", "");
-		hideTimeout = $.later(2500, hide);
+		hideTimeout = $.later(2500, hideUi);
 	}
 	$("#image").on("mousemove", startHideTimeout);
 	$(window).on("mouseleave", startHideTimeout);
@@ -615,6 +654,11 @@ $(document).ready(function()
 		$("#menu").css("opacity", 1);
 	});
 	
+	
+	$(window).on("resize", (event) =>
+	{
+		viewer.ensurePosition();
+	});
 	
 	
 	nw.Window.get().on("close", function()
