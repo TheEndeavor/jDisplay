@@ -12,13 +12,12 @@ v1.0 made in a day.
 * Works with jpeg, png, bmp, and gifs.
 * Works with Zip files; zip, cbz.
 * Remembers where you left off if you load the same source folder or file.
+* Supports Zooming and Draggin the image.
 * Probably less buggy since I've spent more than 1 day on it.
 
 ## Missing Features
-* Zooming and Dragging the image.
 * Support for more formats, including possibly video.
 * Recussive processing of archives.
-* Rar support.
 
 ## Controls
 * F11       - Enter/Exit Fullscreen
@@ -43,5 +42,4 @@ For a custom install or for Linux / Mac users:
 6. Profit!
 
 ## Known Bugs
-* Opening multiple instances leads to "Window Madness". Best to stick to 1 instance until I've found a fix.
 * Zip extracting is processed in the wrong order. Causes increased memory usage.
