@@ -18,6 +18,8 @@ body
 {
 	overflow: hidden;
 	
+	user-select: none;
+	
 	background-color: rgb(8, 8, 8);
 }
 
