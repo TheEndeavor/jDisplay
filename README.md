@@ -4,7 +4,7 @@ Simple image viewer
 jDisplay is a simple image viewer.  
 v1.0 made in a day.
 
-![Alt text](/../<screenshots>/screenshots/screenshot-01.jpg?raw=true "Screenshot")
+![Screenshot](/../screenshots/screenshots/screenshot-01.jpg?raw=true "Screenshot")
 
 ## Features
 * Drag and Drop files or directories to load them.
