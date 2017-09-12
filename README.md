@@ -44,4 +44,5 @@ For a custom install or for Linux / Mac users:
 6. Profit!
 
 ## Known Bugs
+* Zip and Rar files can crash the program if they are too large.
 * Zip extracting is processed in the wrong order. Causes increased memory usage.
