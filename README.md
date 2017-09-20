@@ -4,9 +4,9 @@ Simple image viewer
 jDisplay is a simple image viewer.  
 
 ## Functions
-Use it as a plain image viewer.
-Use it like a comic reader similar to CDisplay.
-Use it as an image randomizer.
+* Use it as a image viewer.
+* Use it like a comic reader similar to CDisplay.
+* Use it as an image randomizer.
 
 ![Screenshot](/../screenshots/screenshots/screenshot-01.jpg?raw=true "Screenshot")
 
