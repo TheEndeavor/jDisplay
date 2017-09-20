@@ -2,7 +2,11 @@
 Simple image viewer
 
 jDisplay is a simple image viewer.  
-v1.0 made in a day.
+
+## Functions
+Use it as a plain image viewer.
+Use it like a comic reader similar to CDisplay.
+Use it as an image randomizer.
 
 ![Screenshot](/../screenshots/screenshots/screenshot-01.jpg?raw=true "Screenshot")
 
@@ -12,14 +16,13 @@ v1.0 made in a day.
 * Can randomize selection of image to display.
 * Remembers history of random images.
 * Works with jpeg, png, bmp, and gifs.
-* Works with Zip files; zip, cbz.
+* Works with Zip files; zip, cbz and Rar files; rar, cbr.
 * Remembers where you left off if you load the same source folder or file.
-* Supports Zooming and Draggin the image.
-* Probably less buggy since I've spent more than 1 day on it.
+* Supports Zooming and Dragging the image.
 
 ## Missing Features
 * Support for more formats, including possibly video.
-* Recussive processing of archives.
+* Recursive processing of archives.
 
 ## Controls
 * F11       - Enter/Exit Fullscreen
@@ -44,5 +47,6 @@ For a custom install or for Linux / Mac users:
 6. Profit!
 
 ## Known Bugs
+* The program seems to crash randomly. Does not appear to be js related.
 * Zip and Rar files can crash the program if they are too large.
 * Zip extracting is processed in the wrong order. Causes increased memory usage.
